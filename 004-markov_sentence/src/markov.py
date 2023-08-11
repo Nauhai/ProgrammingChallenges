@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from collections import defaultdict
+from collections import defaultdict, Counter
 import random
 import re
 
@@ -23,35 +23,76 @@ class Word:
 
 
 def get_words(input_text: str) -> list[Word]:
-    words = list(map(lambda w: Word(w), re.findall("\w+", input_text)))
-    starting_words = re.findall("(?:(?:^|(?:\.(?: ?)))(?P<starting>\w+))", input_text)
-    ending_words = re.findall("(?:(?P<ending>\w+)\.)", input_text)
+    input_text = input_text.strip()
 
-    for w in words:
-        if w.word in starting_words:
-            w.starting = True
-        if w.word in ending_words:
-            w.ending = True
-    
+    words = []
+
+    cursor = 0
+    current = ""
+    starting = True
+    ending = False
+
+    while cursor < len(input_text):
+        c = input_text[cursor]
+
+        if c in (' ', '.') and current:
+            if ending:
+                # if previous word was ending, then current one is starting
+                starting = True
+                ending = False
+            
+            if c == '.':
+                ending = True
+            
+            words.append(Word(current, starting, ending))
+            current = ""
+            starting = False
+        
+        elif c not in (' ', '.'):
+            current += c
+        
+        cursor += 1
+
     return words
 
 
 def get_graph(input_text: str) -> dict[Word, list[Word]]:
     words = get_words(input_text)
 
-    graph = defaultdict(lambda: list())
+    graph = defaultdict(list)
     for i in range(len(words)-1):
-        graph[words[i]].append(words[i+1])
+        if not words[i].ending:
+            graph[words[i]].append(words[i+1])
     
     return graph
 
 
-def compute_sentence(graph: dict[Word, list[Word]]) -> list[Word]:
-    current_word = random.choice(list(filter(lambda w: w.starting, graph.keys())))
-    sentence = [current_word.word]
+def compute_all_sentences_from(graph, current, max_length):
+    max_length -= 1
+
+    if current.ending:
+        return [[current.word]]
     
-    while not current_word.ending:
-        current_word = random.choice(graph[current_word])
-        sentence.append(current_word.word)
+    if max_length == 0:
+        return None
     
-    return sentence
+    all_sentences = []
+    
+    for word in graph[current]:
+        sentences = compute_all_sentences_from(graph, word, max_length)
+        if sentences:
+            for i, s in enumerate(sentences):
+                sentences[i] = [current.word] + s
+            all_sentences.extend(sentences)
+        
+    return all_sentences
+
+
+def compute_all_sentences(graph, max_length):
+    all_sentences = []
+
+    for starting_word in filter(lambda w: w.starting, graph.keys()):
+        sentences = compute_all_sentences_from(graph, starting_word, max_length)
+        all_sentences.extend(map(tuple, sentences))
+    
+    return Counter(all_sentences)

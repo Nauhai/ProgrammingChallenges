@@ -2,8 +2,7 @@
 
 ## TODO
 
-- [ ] Make the regex for the words more accurate (handle dashes, quotes, etc.)
 - [x] The user should provide the input file/text (command arguments)
-- [ ] The user should be able to choose the average length of the sentences and the number of *different* sentences he wants to compute
-- [ ] Add unit tests
+- [x] The user should be able to choose the maximum length of the sentences and the maximum number of *different* sentences he wants to compute
+- [x] Add unit tests
 - [ ] Add docs
