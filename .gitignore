@@ -1,1 +1,8 @@
+# Python projects
 __pycache__/
+
+# Rust projects
+target/
+debug/
+Cargo.lock
+
