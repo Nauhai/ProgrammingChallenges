@@ -1,6 +1,7 @@
-use cursive::views::{Dialog, NamedView, ViewRef, LinearLayout};
-use cursive::view::View;
+use cursive::views::{Dialog, NamedView, ViewRef, LinearLayout, SelectView};
+use cursive::view::{View, CannotFocus};
 use cursive::event::{Event, EventResult, MouseEvent};
+use cursive::direction;
 use todo_tui::Task;
 
 
@@ -42,7 +43,7 @@ impl View for TaskView {
 
     fn on_event(&mut self, event: Event) -> EventResult {
         match event {
-            Event::Mouse { offset, position, event: MouseEvent::Release(_) } => {
+            Event::Mouse { offset:  _, position: _, event: MouseEvent::Release(_) } => {
                 self.task.switch_state();
                 return EventResult::Consumed(None);
             },
@@ -50,5 +51,12 @@ impl View for TaskView {
         }
 
         EventResult::Ignored
+    }
+
+    fn take_focus(
+            &mut self,
+            _source: direction::Direction,
+        ) -> Result<EventResult, CannotFocus> {
+        Ok(EventResult::Consumed(None))
     }
 }
